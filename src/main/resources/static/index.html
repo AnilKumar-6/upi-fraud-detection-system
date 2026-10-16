@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UPI Shield | Fraud Detection</title><link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<header class="topbar"><div class="brand"><span class="logo">U</span><div><strong>UPI Shield</strong><small>Transaction Intelligence</small></div></div><span class="live"><i></i> LOCAL DEMO</span></header>
+<main class="wrap">
+  <section class="hero"><div><p class="eyebrow">PAYMENT SECURITY WORKSPACE</p><h1>Fraud Detection<br><em>Dashboard</em></h1><p class="muted">Review transaction risk signals and keep a searchable record of predictions.</p></div><div class="hero-art"><div class="shield">✓</div><div class="orbit orbit1"></div><div class="orbit orbit2"></div></div></section>
+  <section class="stats">
+    <article class="stat"><span>Total transactions</span><strong id="total">0</strong><small>Saved in MySQL</small></article>
+    <article class="stat"><span>High risk</span><strong id="high">0</strong><small class="danger">Requires attention</small></article>
+    <article class="stat"><span>Needs review</span><strong id="review">0</strong><small>Manual review suggested</small></article>
+    <article class="stat"><span>Average risk score</span><strong id="averageRisk">0%</strong><small>Across recent transactions</small></article>
+  </section>
+  <section class="panel distribution">
+    <div class="panel-heading"><div><p class="eyebrow">RISK OVERVIEW</p><h2>Risk-level distribution</h2></div><span class="step">LIVE SUMMARY</span></div>
+    <div class="distribution-grid">
+      <div class="distribution-item"><div><span class="dot high-dot"></span>High risk <strong id="highCount">0</strong></div><div class="bar"><span id="highBar" class="high-bar"></span></div></div>
+      <div class="distribution-item"><div><span class="dot review-dot"></span>Needs review <strong id="reviewCount">0</strong></div><div class="bar"><span id="reviewBar" class="review-bar"></span></div></div>
+      <div class="distribution-item"><div><span class="dot low-dot"></span>Low risk <strong id="lowCount">0</strong></div><div class="bar"><span id="lowBar" class="low-bar"></span></div></div>
+    </div>
+    <p class="muted chart-note">Distribution is calculated from the latest 100 saved transactions.</p>
+  </section>
+  <section class="content">
+    <article class="panel form-panel"><div class="panel-heading"><div><p class="eyebrow">NEW ANALYSIS</p><h2>Check a transaction</h2></div><span class="step">01 / INPUT</span></div>
+      <form id="txForm">
+        <div class="grid two"><label>Sender UPI ID<input name="senderUpi" placeholder="person@upi" required maxlength="120"></label><label>Receiver UPI ID<input name="receiverUpi" placeholder="merchant@upi" required maxlength="120"></label></div>
+        <div class="grid two"><label>Amount (₹)<input name="amount" type="number" min="0.01" step="0.01" placeholder="1500.00" required></label><label>Transaction type<select name="transactionType"><option>P2P</option><option>P2M</option><option>BILL_PAYMENT</option><option>OTHER</option></select></label></div>
+        <div class="grid two"><label>Transaction hour (0–23)<input name="hourOfDay" type="number" min="0" max="23" value="14" required></label><label>Failed attempts<input name="failedAttempts" type="number" min="0" max="100" value="0" required></label></div>
+        <div class="checks"><label class="check"><input type="checkbox" name="locationMismatch"> Location mismatch</label><label class="check"><input type="checkbox" name="deviceChanged"> New/changed device</label></div>
+        <button class="primary" type="submit">Analyze transaction <span>→</span></button><p id="formMessage" class="form-message"></p>
+      </form>
+    </article>
+    <article class="panel result-panel"><div class="panel-heading"><div><p class="eyebrow">LATEST RESULT</p><h2>Risk assessment</h2></div><span class="step">02 / RESULT</span></div>
+      <div id="emptyResult" class="empty"><div class="empty-icon">⌁</div><strong>Waiting for transaction</strong><p>Submit a transaction to see its risk classification.</p></div>
+      <div id="result" class="result hidden"><div id="resultBadge" class="risk-badge">REVIEW</div><div class="score"><strong id="score">0%</strong><span>Risk score</span></div><div class="meter"><div id="meterFill"></div></div><p id="explanation" class="muted"></p><div class="result-meta"><span>Prediction source</span><strong id="source">—</strong></div></div>
+      <div class="note"><strong>Prototype notice</strong><p>Educational demo only. A risk score is not proof of fraud and must not be used to authorize real payments.</p></div>
+    </article>
+  </section>
+  <section class="panel history"><div class="panel-heading"><div><p class="eyebrow">AUDIT TRAIL</p><h2>Recent transactions</h2></div><div class="history-actions"><input id="historySearch" type="search" placeholder="Search UPI ID, risk, or transaction ID" aria-label="Search transaction history"><button id="refresh" class="secondary">Refresh ↻</button></div></div><div class="table-wrap"><table><thead><tr><th>ID</th><th>Sender</th><th>Receiver</th><th>Amount</th><th>Risk</th><th>Score</th><th>Created</th></tr></thead><tbody id="historyBody"><tr><td colspan="7" class="empty-row">No transactions yet.</td></tr></tbody></table></div></section>
+  <footer>UPI Shield · Java Spring Boot + MySQL + Python scoring service</footer>
+</main><script src="/app.js"></script>
+</body></html>
