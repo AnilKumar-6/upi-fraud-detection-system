@@ -1,0 +1,11 @@
+target/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.env
+*.joblib
+*.pkl
+.DS_Store
+.idea/
+.vscode/
