@@ -44,17 +44,7 @@ $('txForm').addEventListener('submit',async e=>{
   $('rulesScore').textContent=Math.round(Number(data.rulesScore??data.riskScore??0)*100)+'%';
   renderXai('factorList',data.contributingFactors||[], 'contribution');
   renderXai('importanceList',data.modelFeatureImportance||[], 'importance');
-
-
-
-const localMethod = data.xaiMethod ||
-  'model-agnostic single-feature ablation approximation';
-
-$('xaiMethod').textContent =
-  'Transaction contributing factors — Method: ' + localMethod + '. ' +
-  (data.explanation ||
-    'Each factor compares the original score with the score after neutralizing one feature. This is an approximate sensitivity analysis, not SHAP or causal proof.');
-
+  $('xaiMethod').textContent=data.xaiMethod?('Method: '+data.xaiMethod+'. '+(data.explanation||'')):(data.explanation||'');
   $('formMessage').textContent='Transaction saved successfully.';await refreshDashboard();
  }catch(err){$('formMessage').textContent=err.message;}finally{btn.disabled=false;}
 });
