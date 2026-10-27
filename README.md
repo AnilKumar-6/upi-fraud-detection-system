@@ -1,61 +1,119 @@
-# UPI Fraud Detection System
+# UPI Fraud Detection System with Explainable AI (XAI)
 
-A portfolio project based on the supplied report **“UPI Fraud Detection Using Machine Learning”**, modernized to use:
-- Java 17 + Spring Boot REST API
-- MySQL for transaction and prediction history
-- Python FastAPI service for fraud-risk scoring / optional trained scikit-learn model
-- Responsive HTML/CSS/JavaScript dashboard
+A full-stack portfolio project that demonstrates fraud-risk scoring for simulated UPI-style transactions using Java, Spring Boot, MySQL, Python, FastAPI, and a web dashboard.
 
-## Important scope note
-The report describes SVM, Random Forest, Decision Tree and Gradient Boosting, plus data loading, preprocessing, feature selection and extraction. The original trained model, original Python source, and real dataset were not included with the report upload. Therefore this package includes a transparent baseline risk-scoring service and a training script that can train/compare those four classifiers when you supply a labeled CSV. Do not describe demo scores as validated real-world fraud detection or use this as a real payment security system.
+## Technology Stack
+
+- **Backend:** Java 17, Spring Boot, REST APIs
+- **Database:** MySQL
+- **Machine Learning API:** Python, FastAPI, scikit-learn
+- **Frontend:** HTML, CSS, JavaScript
+- **Explainability:** Per-transaction feature sensitivity analysis and model-level feature importance where supported
+
+## Important Scope and Limitations
+
+This is an educational prototype. PaySim is a **synthetic mobile-money dataset**, not a real UPI transaction dataset. The project does not connect to banks or UPI payment networks, access bank accounts, or initiate payments.
+
+Predictions are risk estimates, not proof of fraud. Real-world deployment would require authorized transaction-data integration, representative labeled data, rigorous evaluation, security controls, and human review.
 
 ## Prerequisites
-- Java 17+
-- MySQL Server running locally (Workbench is only the client)
-- Python 3.11 recommended
-- Maven Wrapper (`mvnw.cmd`) included if you copy it from your generated project, or Maven installed
 
-## 1. Database
-In MySQL Workbench, execute:
+- Java 17 or later
+- Maven installed and available in your terminal
+- MySQL Server and MySQL Workbench
+- Python 3.12 (64-bit recommended for this tested setup)
+- VS Code or another code editor
+
+## 1. Set Up the Database
+
+Open MySQL Workbench and execute:
+
 ```sql
 CREATE DATABASE upi_fraud_detection;
 ```
 
-## 2. Configure Spring Boot
-Set environment variables in the VS Code terminal before starting:
+## 2. Configure and Run Spring Boot
+
+Open PowerShell in the project root directory.
+
+Set the database connection variables. Replace the example password with your own local MySQL password; do not commit real credentials.
+
 ```powershell
 $env:DB_URL="jdbc:mysql://localhost:3306/upi_fraud_detection"
 $env:DB_USERNAME="root"
 $env:DB_PASSWORD="YOUR_LOCAL_MYSQL_PASSWORD"
 $env:ML_SERVICE_URL="http://localhost:8000"
-.\mvnw.cmd spring-boot:run
 ```
-If you have no MySQL password, set `$env:DB_PASSWORD=""`. Never commit real credentials.
 
-Backend runs at http://localhost:8080.
+If your MySQL account has no password, use:
 
-## 3. Start the Python ML service
-Open a second terminal:
+```powershell
+$env:DB_PASSWORD=""
+```
+
+Start the backend using installed Maven:
+
+```powershell
+mvn spring-boot:run
+```
+
+The backend runs at `http://localhost:8080`.
+
+Keep this terminal open while using the application.
+
+## 3. Set Up and Run the Python ML Service
+
+Open a **second PowerShell terminal** and navigate to the ML service directory:
+
 ```powershell
 cd ml-service
-py -3.11 -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
-uvicorn app:app --reload --port 8000
 ```
-ML service runs at http://localhost:8000. Health: http://localhost:8000/health
 
-## 4. Open dashboard
-After Spring Boot starts, open http://localhost:8080 in a browser.
+Create the virtual environment if you have not already created it:
 
-## API
-- `GET /api/health`
-- `POST /api/transactions` create transaction and get risk prediction
-- `GET /api/transactions` list recent transactions
-- `GET /api/transactions/{id}` get one transaction
-- `GET /api/dashboard/summary` dashboard counts
+```powershell
+py -3.12 -m venv .venv
+```
 
-Example POST:
+Install the dependencies using the virtual environment's Python executable:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install --upgrade pip
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+
+Start FastAPI:
+
+```powershell
+.\.venv\Scripts\python.exe -m uvicorn app:app --host 127.0.0.1 --port 8000
+```
+
+The ML service runs at `http://localhost:8000`.
+
+Health endpoint: `http://localhost:8000/health`
+
+Keep this terminal open as well.
+
+## 4. Open the Dashboard
+
+Once both services are running, open:
+
+`http://localhost:8080`
+
+Submit a transaction through the dashboard to view its risk assessment and explanation.
+
+## API Endpoints
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| GET | `/api/health` | Check backend health |
+| POST | `/api/transactions` | Submit a transaction and request risk scoring |
+| GET | `/api/transactions` | List recent transactions |
+| GET | `/api/transactions/{id}` | Retrieve a transaction |
+| GET | `/api/dashboard/summary` | Retrieve dashboard summary statistics |
+
+### Example Transaction Request
+
 ```json
 {
   "senderUpi": "anil@upi",
@@ -69,46 +127,60 @@ Example POST:
 }
 ```
 
-## Model training (optional)
-Provide a CSV with columns matching the features described in `ml-service/train_model.py`, including a binary `is_fraud` target (0/1). Then run:
-```powershell
-python train_model.py --csv path\to\your_dataset.csv
+## Dashboard Features
+
+- MySQL-backed transaction history
+- Search by transaction ID, sender or receiver UPI ID, risk level, or transaction type
+- Summary counts for transactions, high-risk results, and transactions requiring review
+- Average risk score and risk-level distribution for recent saved transactions
+- Display of prediction results and explanation details
+
+## Explainable AI (XAI)
+
+The Python API provides fraud-risk scoring and, when available, additional information about the model's behavior.
+
+- `POST /predict` returns risk-prediction information, including ML and rules scores, contributing factors, rule triggers, and explanation metadata.
+- `GET /explainability/feature-importance` provides model-level feature importance when supported by the trained estimator.
+- The dashboard can display the ML-versus-rules score comparison and available local or global contribution information.
+
+The local explanation uses a single-feature ablation/sensitivity approximation. It is **not SHAP**, does not establish causation, and does not prove that any feature caused fraud. Some models may not expose native global feature-importance values.
+
+If a trained model is unavailable, the service may use a clearly identified rules-based fallback. A fallback score must not be represented as a trained model prediction.
+
+## Optional Model Training
+
+The training script is located at `ml-service/train_model.py`.
+
+A suitable labeled CSV should contain the following fields, with `is_fraud` encoded as 0 or 1:
+
+```text
+amount,hourOfDay,locationMismatch,failedAttempts,deviceChanged,transactionType,is_fraud
 ```
-The script compares Decision Tree, Random Forest, Gradient Boosting, and SVM using a stratified split and reports precision, recall, F1 and ROC-AUC where possible. It saves the best model pipeline locally. Model files are ignored by Git and should not be committed unless intended.
 
-## Safety
-This is an educational prototype. It does not initiate UPI payments, access bank accounts, or establish that a transaction is genuinely fraudulent. Use synthetic or properly authorized, anonymized data only.
+The dataset must contain examples from both classes. Confirm the required columns and data types in the training script before running it.
 
-
-## Dashboard features
-- MySQL-backed transaction history (latest 100 records)
-- Search history by transaction ID, sender/receiver UPI ID, risk level, or transaction type
-- Dashboard summary for total transactions, high-risk transactions, and transactions needing review
-- Average risk score and risk-level distribution for the latest 100 saved transactions
-- Fraud predictions are educational prototype outputs based on simulated PaySim data; they are not proof of real-world fraud
-
-## Explainable AI (XAI) additions
-
-- `POST http://localhost:8000/predict` now returns the ML score, transparent rules score, score difference, per-transaction contributing factors, rule triggers, model-level feature importance, and the explanation method.
-- `GET http://localhost:8000/explainability/feature-importance` returns global model-level feature importance when supported by the trained estimator.
-- The dashboard shows ML vs rules score and local/global feature contribution bars after a transaction is submitted.
-- If the model file is absent, the API clearly labels the result as a demo rules score. The project does not pretend that demo rules are a trained model.
-
-### Train the model for XAI
-
-Use Python 3.11 or 3.12 (64-bit) for broad package compatibility. In PowerShell:
+From the `ml-service` directory, run:
 
 ```powershell
-cd ml-service
-py -3.12 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install --upgrade pip
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
 .\.venv\Scripts\python.exe train_model.py --csv .\your_labeled_dataset.csv
-.\.venv\Scripts\python.exe -m uvicorn app:app --reload --port 8000
 ```
 
-The CSV must contain `amount,hourOfDay,locationMismatch,failedAttempts,deviceChanged,transactionType,is_fraud`, with both 0 and 1 in `is_fraud`. Use an authorized, representative labeled dataset and map its fields carefully; PaySim is synthetic mobile-money data, not real UPI data.
+The script compares Decision Tree, Random Forest, Gradient Boosting, and SVM models and reports applicable evaluation metrics. The selected pipeline is saved locally.
 
-### Explanation limits
+Use representative, authorized, appropriately anonymized data. PaySim's synthetic mobile-money records should not be described as real UPI transactions.
 
-The local explanation is a model-agnostic single-feature ablation/sensitivity approximation, not SHAP, not causal proof, and not a guarantee that a factor caused fraud. Model-level importance is a measure of model reliance, not causality. Scores and explanations require evaluation on held-out data, calibration, subgroup/fairness checks, and analyst review before any production use.
+## Security and Production Considerations
+
+This project is intended for learning and portfolio demonstration, not production payment security.
+
+Before any real-world use, additional work would be needed for:
+
+- Authorized integration with a bank or payment provider
+- Secure authentication, authorization, and secrets management
+- Validation of incoming transaction data
+- Testing on representative held-out data
+- Model calibration and fraud-focused evaluation metrics
+- Fairness and subgroup checks
+- Monitoring, audit trails, and analyst review
+
+Never commit database passwords, API keys, access tokens, or other secrets to GitHub.
