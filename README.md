@@ -275,3 +275,15 @@ Never commit database passwords, API keys, access tokens, or other secrets to Gi
 
 git diff --check
 git status
+
+
+## Application Screenshots
+
+### Dashboard Overview
+![UPI Shield dashboard overview](screenshots/dashboard-overview.png)
+
+### Transaction Analysis
+![Transaction analysis and risk assessment](screenshots/transaction-analysis.png)
+
+### Transaction History
+![Transaction history with risk scores](screenshots/transaction-history.png)
