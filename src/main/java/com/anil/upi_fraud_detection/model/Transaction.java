@@ -1,10 +1,18 @@
 package com.anil.upi_fraud_detection.model;
 
-import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "transactions")
@@ -41,13 +49,30 @@ public class Transaction {
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
-    @Transient private Double mlScore;
-    @Transient private Double rulesScore;
-    @Transient private String explanation;
-    @Transient private List<Map<String,Object>> contributingFactors = List.of();
-    @Transient private List<Map<String,Object>> ruleTriggers = List.of();
-    @Transient private List<Map<String,Object>> modelFeatureImportance = List.of();
-    @Transient private String xaiMethod;
+@Column
+private Double mlScore;
+
+@Column
+private Double rulesScore;
+
+@Column(columnDefinition = "TEXT")
+private String explanation;
+
+@Convert(converter = JsonMapListConverter.class)
+@Column(columnDefinition = "TEXT")
+private List<Map<String, Object>> contributingFactors = List.of();
+
+@Convert(converter = JsonMapListConverter.class)
+@Column(columnDefinition = "TEXT")
+private List<Map<String, Object>> ruleTriggers = List.of();
+
+@Convert(converter = JsonMapListConverter.class)
+@Column(columnDefinition = "TEXT")
+private List<Map<String, Object>> modelFeatureImportance = List.of();
+
+@Column(length = 100)
+private String xaiMethod;
+
 
 
     @PrePersist
